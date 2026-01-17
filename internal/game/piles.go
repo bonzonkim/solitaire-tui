@@ -1,21 +1,29 @@
 package game
 
-// Tableau represents the seven columns of cards in the main playing area.
-type Tableau struct {
-	Columns [][]Card
+// Pile represents a stack of cards.
+type Pile struct {
+	Cards []*Card
 }
 
-// Stock represents the pile of cards that have not yet been dealt to the waste pile.
-type Stock struct {
-	Cards []Card
+// Push adds a card to the top of the pile.
+func (p *Pile) Push(c *Card) {
+	p.Cards = append(p.Cards, c)
 }
 
-// Waste represents the pile of cards from the stock that can be played.
-type Waste struct {
-	Cards []Card
+// Pop removes and returns the top card from the pile. Returns nil if the pile is empty.
+func (p *Pile) Pop() *Card {
+	if len(p.Cards) == 0 {
+		return nil
+	}
+	card := p.Cards[len(p.Cards)-1]
+	p.Cards = p.Cards[:len(p.Cards)-1]
+	return card
 }
 
-// Foundation represents the four piles where cards are moved to win the game.
-type Foundation struct {
-	Piles [][]Card
+// Peek returns the top card of the pile without removing it. Returns nil if the pile is empty.
+func (p *Pile) Peek() *Card {
+	if len(p.Cards) == 0 {
+		return nil
+	}
+	return p.Cards[len(p.Cards)-1]
 }
