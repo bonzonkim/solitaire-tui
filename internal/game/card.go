@@ -1,33 +1,77 @@
 package game
 
+import "strconv"
+
 // Suit represents the suit of a playing card.
-type Suit string
+type Suit int
 
 const (
-	Clubs    Suit = "Clubs"
-	Diamonds Suit = "Diamonds"
-	Hearts   Suit = "Hearts"
-	Spades   Suit = "Spades"
+	Spades Suit = iota
+	Hearts
+	Diamonds
+	Clubs
 )
+
+// String returns the string representation of a suit.
+func (s Suit) String() string {
+	switch s {
+	case Spades:
+		return "♠"
+	case Hearts:
+		return "♥"
+	case Diamonds:
+		return "♦"
+	case Clubs:
+		return "♣"
+	default:
+		return ""
+	}
+}
+
+// Color returns "Red" or "Black".
+func (s Suit) Color() string {
+	if s == Hearts || s == Diamonds {
+		return "Red"
+	}
+	return "Black"
+}
 
 // Rank represents the rank of a playing card.
-type Rank string
+type Rank int
 
 const (
-	Ace   Rank = "A"
-	Two   Rank = "2"
-	Three Rank = "3"
-	Four  Rank = "4"
-	Five  Rank = "5"
-	Six   Rank = "6"
-	Seven Rank = "7"
-	Eight Rank = "8"
-	Nine  Rank = "9"
-	Ten   Rank = "10"
-	Jack  Rank = "J"
-	Queen Rank = "Q"
-	King  Rank = "K"
+	Ace Rank = iota + 1
+	Two
+	Three
+	Four
+	Five
+	Six
+	Seven
+	Eight
+	Nine
+	Ten
+	Jack
+	Queen
+	King
 )
+
+// String returns the string representation of a rank.
+func (r Rank) String() string {
+	switch r {
+	case Ace:
+		return "A"
+	case Jack:
+		return "J"
+	case Queen:
+		return "Q"
+	case King:
+		return "K"
+	case 10:
+		return "10"
+	default:
+		return strconv.Itoa(int(r))
+	}
+}
 
 // Card represents a single playing card.
 type Card struct {
