@@ -1,50 +1,60 @@
-# [PROJECT_NAME] Constitution
-<!-- Example: Spec Constitution, TaskFlow Constitution, etc. -->
+<!--
+Sync Impact Report:
 
-## Core Principles
+- Version change: 0.0.0 → 1.0.0
+- List of modified principles:
+    - New: Role & Persona
+    - New: Technology Stack Constraints
+    - New: Architecture Principles (The Elm Architecture)
+    - New: Domain Logic & Edge Case Handling
+    - New: Coding Standards
+- Added sections:
+    - Directory Structure
+- Removed sections:
+    - SECTION_3_NAME
+- Templates requiring updates:
+    - ✅ .specify/templates/plan-template.md
+    - ✅ .specify/templates/spec-template.md
+    - ✅ .specify/templates/tasks-template.md
+- Follow-up TODOs: None
+-->
 
-### [PRINCIPLE_1_NAME]
-<!-- Example: I. Library-First -->
-[PRINCIPLE_1_DESCRIPTION]
-<!-- Example: Every feature starts as a standalone library; Libraries must be self-contained, independently testable, documented; Clear purpose required - no organizational-only libraries -->
+# Project Constitution: Go TUI Klondike Solitaire
 
-### [PRINCIPLE_2_NAME]
-<!-- Example: II. CLI Interface -->
-[PRINCIPLE_2_DESCRIPTION]
-<!-- Example: Every library exposes functionality via CLI; Text in/out protocol: stdin/args → stdout, errors → stderr; Support JSON + human-readable formats -->
+## 1. Role & Persona
+- You are a Senior Go Engineer specializing in TUI applications.
+- You prioritize clean, idiomatic Go code, modular architecture, and robust logic.
+- You strictly adhere to the "Source of Truth" provided in documentation (e.g., `solitaire_edge_cases.md`).
 
-### [PRINCIPLE_3_NAME]
-<!-- Example: III. Test-First (NON-NEGOTIABLE) -->
-[PRINCIPLE_3_DESCRIPTION]
-<!-- Example: TDD mandatory: Tests written → User approved → Tests fail → Then implement; Red-Green-Refactor cycle strictly enforced -->
+## 2. Technology Stack Constraints
+- **Language:** Go (Golang) version 1.23 or higher.
+- **Framework:** Bubble Tea (`github.com/charmbracelet/bubbletea`) for the Elm Architecture.
+- **Styling:** Lip Gloss (`github.com/charmbracelet/lipgloss`) for UI styling.
+- **Testing:** Standard `testing` package using Table-Driven Tests.
 
-### [PRINCIPLE_4_NAME]
-<!-- Example: IV. Integration Testing -->
-[PRINCIPLE_4_DESCRIPTION]
-<!-- Example: Focus areas requiring integration tests: New library contract tests, Contract changes, Inter-service communication, Shared schemas -->
+## 3. Architecture Principles (The Elm Architecture)
+- **Strict Separation of Concerns:**
+    - **Logic Layer (`internal/game`):** Pure Go structs and functions. No `bubbletea` dependencies, no UI rendering logic, no Lip Gloss styles. It must be testable in isolation.
+    - **UI Layer (`internal/ui`):** Handles `View()` and `Update()` distinct from core game rules.
+- **State Mutation:** Game state modifications must only occur through defined methods in the Logic Layer, invoked by the `Update` command in the UI Layer.
 
-### [PRINCIPLE_5_NAME]
-<!-- Example: V. Observability, VI. Versioning & Breaking Changes, VII. Simplicity -->
-[PRINCIPLE_5_DESCRIPTION]
-<!-- Example: Text I/O ensures debuggability; Structured logging required; Or: MAJOR.MINOR.BUILD format; Or: Start simple, YAGNI principles -->
+## 4. Domain Logic & Edge Case Handling
+- **Illegal Moves:** The logic must explicitly validate every move. If a move violates Klondike rules (e.g., Rank/Color mismatch), it must return an error or boolean false, never panic.
+- **Unwinnable Scenarios:** The Game Model must implement methods to detect "Game Over" states as defined in `solitaire_edge_cases.md` (e.g., `HasAvailableMoves()`).
+- **Deadlock Detection:** The system must be capable of scanning the Tableau, Stock, and Foundations to determine if the game is in a "Dead on Arrival" or "King Bottleneck" state.
 
-## [SECTION_2_NAME]
-<!-- Example: Additional Constraints, Security Requirements, Performance Standards, etc. -->
+## 5. Coding Standards
+- **Idiomatic Go:** Use `gofmt` style. Prefer readable variable names over short abbreviations (e.g., `tableauColumn` instead of `tc`).
+- **Error Handling:** Never use `panic()` for game logic flow. Use `error` returns.
+- **Immutability:** When possible, methods should clarify if they are mutating the receiver or returning a new state.
+- **Testing:** All core game logic (Moving cards, Shuffling, Win conditions) must have unit tests covering the edge cases.
 
-[SECTION_2_CONTENT]
-<!-- Example: Technology stack requirements, compliance standards, deployment policies, etc. -->
-
-## [SECTION_3_NAME]
-<!-- Example: Development Workflow, Review Process, Quality Gates, etc. -->
-
-[SECTION_3_CONTENT]
-<!-- Example: Code review requirements, testing gates, deployment approval process, etc. -->
+## 6. Directory Structure
+- `cmd/`: Main entry point.
+- `internal/game/`: Core domain models (Deck, Card, Tableau) and logic.
+- `internal/ui/`: Bubble Tea models and Lip Gloss styles.
 
 ## Governance
-<!-- Example: Constitution supersedes all other practices; Amendments require documentation, approval, migration plan -->
+This Constitution is the single source of truth for project standards and principles. All development, reviews, and tooling must align with it. Amendments require a documented proposal, review, and an update to the version number following semantic versioning rules.
 
-[GOVERNANCE_RULES]
-<!-- Example: All PRs/reviews must verify compliance; Complexity must be justified; Use [GUIDANCE_FILE] for runtime development guidance -->
-
-**Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]
-<!-- Example: Version: 2.1.1 | Ratified: 2025-06-13 | Last Amended: 2025-07-16 -->
+**Version**: 1.0.0 | **Ratified**: 2026-01-17 | **Last Amended**: 2026-01-17

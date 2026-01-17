@@ -11,27 +11,25 @@
 
 ## Technical Context
 
-<!--
-  ACTION REQUIRED: Replace the content in this section with the technical details
-  for the project. The structure here is presented in advisory capacity to guide
-  the iteration process.
--->
-
-**Language/Version**: [e.g., Python 3.11, Swift 5.9, Rust 1.75 or NEEDS CLARIFICATION]  
-**Primary Dependencies**: [e.g., FastAPI, UIKit, LLVM or NEEDS CLARIFICATION]  
-**Storage**: [if applicable, e.g., PostgreSQL, CoreData, files or N/A]  
-**Testing**: [e.g., pytest, XCTest, cargo test or NEEDS CLARIFICATION]  
-**Target Platform**: [e.g., Linux server, iOS 15+, WASM or NEEDS CLARIFICATION]
-**Project Type**: [single/web/mobile - determines source structure]  
-**Performance Goals**: [domain-specific, e.g., 1000 req/s, 10k lines/sec, 60 fps or NEEDS CLARIFICATION]  
-**Constraints**: [domain-specific, e.g., <200ms p95, <100MB memory, offline-capable or NEEDS CLARIFICATION]  
-**Scale/Scope**: [domain-specific, e.g., 10k users, 1M LOC, 50 screens or NEEDS CLARIFICATION]
+**Language/Version**: Go 1.23+
+**Primary Dependencies**: Bubble Tea, Lip Gloss
+**Storage**: N/A
+**Testing**: Go standard `testing` package (Table-Driven)
+**Target Platform**: Terminal (TUI)
+**Project Type**: Single project
+**Performance Goals**: N/A
+**Constraints**: Must adhere to The Elm Architecture principles.
+**Scale/Scope**: TUI Application
 
 ## Constitution Check
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-[Gates determined based on constitution file]
+- [ ] Does the plan enforce strict separation between `internal/game` (logic) and `internal/ui` (view)?
+- [ ] Is all game state mutation handled exclusively by the logic layer?
+- [ ] Does the plan include tests for all core game logic, including edge cases?
+- [ ] Does the implementation avoid `panic()` for control flow?
+- [ ] Does the directory structure align with `cmd/`, `internal/game/`, and `internal/ui/`?
 
 ## Project Structure
 
@@ -48,47 +46,22 @@ specs/[###-feature]/
 ```
 
 ### Source Code (repository root)
-<!--
-  ACTION REQUIRED: Replace the placeholder tree below with the concrete layout
-  for this feature. Delete unused options and expand the chosen structure with
-  real paths (e.g., apps/admin, packages/something). The delivered plan must
-  not include Option labels.
--->
-
 ```text
-# [REMOVE IF UNUSED] Option 1: Single project (DEFAULT)
-src/
-├── models/
-├── services/
-├── cli/
-└── lib/
-
+cmd/
+└── solitaire/
+    └── main.go
+internal/
+├── game/
+│   ├── card.go
+│   ├── deck.go
+│   └── tableau.go
+└── ui/
+    ├── model.go
+    ├── update.go
+    └── view.go
 tests/
-├── contract/
-├── integration/
-└── unit/
-
-# [REMOVE IF UNUSED] Option 2: Web application (when "frontend" + "backend" detected)
-backend/
-├── src/
-│   ├── models/
-│   ├── services/
-│   └── api/
-└── tests/
-
-frontend/
-├── src/
-│   ├── components/
-│   ├── pages/
-│   └── services/
-└── tests/
-
-# [REMOVE IF UNUSED] Option 3: Mobile + API (when "iOS/Android" detected)
-api/
-└── [same as backend above]
-
-ios/ or android/
-└── [platform-specific structure: feature modules, UI flows, platform tests]
+└── game/
+    └── game_test.go
 ```
 
 **Structure Decision**: [Document the selected structure and reference the real
