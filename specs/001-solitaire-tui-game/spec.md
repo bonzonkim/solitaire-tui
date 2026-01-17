@@ -5,6 +5,14 @@
 **Status**: Draft  
 **Input**: User description: "build a TUI app that play solitaire game. if unwinnable scenario has happend, end the game with the message. And support keyboard(vim mode) and mouse control."
 
+## Clarifications
+
+### Session 2026-01-17
+
+- Q: When a user makes an invalid move, how should the system provide feedback? → A: The card should visually shake, and an error message ("Invalid Move") should appear for 2 seconds.
+- Q: Are there any specific performance goals for the TUI? → A: Prioritize responsiveness: All user inputs (keystrokes, mouse clicks) should be processed and reflected on screen in under 100ms.
+- Q: How should the application behave if it's launched in a terminal that is too small to render the game board? → A: Display an error message and exit gracefully.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Play a game of Solitaire (Priority: P1)
@@ -19,7 +27,7 @@ As a user, I want to play a game of Klondike Solitaire in my terminal so that I 
 
 1. **Given** a new game has started, **When** I see the initial layout, **Then** the cards are dealt correctly in the tableau, stock, and waste piles.
 2. **Given** a card is in the tableau, **When** I move it to a valid new location, **Then** the card is moved and the display is updated.
-3. **Given** a card is in the tableau, **When** I attempt to move it to an invalid location, **Then** the card is not moved and I receive feedback that the move is invalid.
+3. **Given** a card is in the tableau, **When** I attempt to move it to an invalid location, **Then** the card is not moved and I receive feedback that the move is invalid. The card should visually shake, and an error message ("Invalid Move") should appear for 2 seconds.
 4. **Given** I am playing a game, **When** I complete the game successfully, **Then** I see a "You Win!" message.
 
 ### User Story 2 - Control the game with the keyboard (Priority: P2)
@@ -67,6 +75,7 @@ As a user, when a game becomes unwinnable, I want the game to end automatically 
 
 - What happens when the terminal is resized? The UI should redraw correctly.
 - What happens if the user tries to perform an action while the game is ending? The action should be ignored.
+- If the terminal is too small to render the game board, the application MUST display an error message and exit gracefully.
 
 ## Requirements *(mandatory)*
 
@@ -81,6 +90,11 @@ As a user, when a game becomes unwinnable, I want the game to end automatically 
 - **FR-007**: The system MUST detect when a game is unwinnable and end the game.
 - **FR-008**: The system MUST display a message when the game is won.
 - **FR-009**: The system MUST display a message when the game is unwinnable.
+- **FR-010**: The system MUST provide visual feedback for invalid moves by shaking the card and showing a temporary message.
+- **FR-011**: The system MUST check the terminal size on startup and exit gracefully with a message if it is too small.
+
+### Non-Functional Requirements
+- **NFR-001**: All user inputs (keystrokes, mouse clicks) MUST be processed and reflected on screen in under 100ms.
 
 ### Key Entities *(include if feature involves data)*
 
@@ -99,6 +113,8 @@ As a user, when a game becomes unwinnable, I want the game to end automatically 
 - **SC-002**: A user can complete a game from start to finish using only the keyboard.
 - **SC-003**: A user can complete a game from start to finish using only the mouse.
 - **SC-004**: The system correctly identifies 100% of unwinnable game states presented in a test suite.
+- **SC-005**: All user inputs are processed and rendered within 100ms.
+
 
 ## Assumptions
 
