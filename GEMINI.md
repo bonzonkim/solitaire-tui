@@ -24,6 +24,7 @@ tests/
 Go 1.23+: Follow standard conventions
 
 ## Recent Changes
+- 007-card-rendering: Added Go 1.23+ + Bubble Tea, Lip Gloss
 - 003-visual-vim-mode: Added Go 1.23+ + Bubble Tea (`bubbletea`), Lip Gloss (`lipgloss`)
 
 - 001-solitaire-tui-game: Added Go 1.23+ + Bubble Tea, Lip Gloss

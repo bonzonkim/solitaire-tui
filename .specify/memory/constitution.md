@@ -48,6 +48,7 @@ Sync Impact Report:
 - **Error Handling:** Never use `panic()` for game logic flow. Use `error` returns.
 - **Immutability:** When possible, methods should clarify if they are mutating the receiver or returning a new state.
 - **Testing:** All core game logic (Moving cards, Shuffling, Win conditions) must have unit tests covering the edge cases.
+- **Command Execution:** When running shell commands (build, test), use simple single commands. Do not chain commands with `&&` operators.
 
 ## 6. Directory Structure
 - `cmd/`: Main entry point.
@@ -57,4 +58,4 @@ Sync Impact Report:
 ## Governance
 This Constitution is the single source of truth for project standards and principles. All development, reviews, and tooling must align with it. Amendments require a documented proposal, review, and an update to the version number following semantic versioning rules.
 
-**Version**: 1.0.0 | **Ratified**: 2026-01-17 | **Last Amended**: 2026-01-17
+**Version**: 1.0.1 | **Ratified**: 2026-01-17 | **Last Amended**: 2026-01-18

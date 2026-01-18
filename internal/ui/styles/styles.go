@@ -6,6 +6,23 @@ const (
 	CardWidth     = 11 // Width for realistic card appearance (support art)
 	CardHeight    = 7  // Height for realistic card appearance
 	OverlapHeight = 2  // Visible height when cards overlap
+
+	// Unicode Box Drawing characters for card borders (normal)
+	BorderTop    = "┌─────────┐"
+	BorderBottom = "└─────────┘"
+	BorderVert   = "│"
+	FaceDownFill = "░░░░░░░░░"
+	InnerWidth   = 9 // Characters between vertical borders
+
+	// Double-line borders for SELECTED (active/focused) cards
+	SelectedBorderTop    = "╔═════════╗"
+	SelectedBorderBottom = "╚═════════╝"
+	SelectedBorderVert   = "║"
+
+	// Thick borders for SOURCE (picked up) cards
+	SourceBorderTop    = "┏━━━━━━━━━┓"
+	SourceBorderBottom = "┗━━━━━━━━━┛"
+	SourceBorderVert   = "┃"
 )
 
 // ASCII Art Registry for Face Cards
@@ -81,13 +98,8 @@ var (
 			Foreground(HelpTextColor).
 			Render
 
-	// Base card style - realistic dimensions
+	// Base card style - realistic dimensions (borders now in content)
 	BaseCard = lipgloss.NewStyle().
-			Width(CardWidth).
-			Height(CardHeight).
-			Align(lipgloss.Center, lipgloss.Center).
-			BorderStyle(lipgloss.RoundedBorder()).
-			BorderForeground(NormalBorder).
 			Background(CardBackground).
 			Foreground(CardForeground)
 
@@ -99,55 +111,33 @@ var (
 	BlackSuit = BaseCard.
 			Foreground(BlackSuitColor)
 
-	// Face-down card with pattern
+	// Face-down card with pattern (borders now in content)
 	FaceDownCard = lipgloss.NewStyle().
-			Width(CardWidth).
-			Height(CardHeight).
-			Align(lipgloss.Center, lipgloss.Center).
-			BorderStyle(lipgloss.RoundedBorder()).
-			BorderForeground(NormalBorder).
 			Background(FaceDownBackground).
 			Foreground(FaceDownForeground)
 
-	// Empty pile placeholder
+	// Empty pile placeholder (borders now in content)
 	EmptyPile = lipgloss.NewStyle().
-			Width(CardWidth).
-			Height(CardHeight).
-			Align(lipgloss.Center, lipgloss.Center).
-			BorderStyle(lipgloss.RoundedBorder()).
 			Foreground(lipgloss.Color("#444444")).
-			Background(lipgloss.Color("#0a3d0e")). // Slightly lighter than table
-			BorderForeground(lipgloss.Color("#2d6a31"))
+			Background(lipgloss.Color("#0a3d0e")) // Slightly lighter than table
 
-	// Selected card generic (cyan border, bold)
-	SelectedCard = BaseCard.
-			BorderForeground(SelectedBorder).
-			BorderStyle(lipgloss.DoubleBorder())
+	// Selected card generic (cyan color indicator)
+	SelectedCard = BaseCard
 
 	// Selected Red Card - preserves red color
-	SelectedRedCard = RedSuit.
-			BorderForeground(SelectedBorder).
-			BorderStyle(lipgloss.DoubleBorder())
+	SelectedRedCard = RedSuit
 
 	// Selected Black Card - preserves black color
-	SelectedBlackCard = BlackSuit.
-				BorderForeground(SelectedBorder).
-				BorderStyle(lipgloss.DoubleBorder())
+	SelectedBlackCard = BlackSuit
 
-	// Source card generic (yellow border)
-	SourceCard = BaseCard.
-			BorderForeground(SourceBorder).
-			BorderStyle(lipgloss.ThickBorder())
+	// Source card generic (yellow color indicator)
+	SourceCard = BaseCard
 
 	// Source Red Card
-	SourceRedCard = RedSuit.
-			BorderForeground(SourceBorder).
-			BorderStyle(lipgloss.ThickBorder())
+	SourceRedCard = RedSuit
 
 	// Source Black Card
-	SourceBlackCard = BlackSuit.
-			BorderForeground(SourceBorder).
-			BorderStyle(lipgloss.ThickBorder())
+	SourceBlackCard = BlackSuit
 
 	// Error text style
 	ErrorStyle = lipgloss.NewStyle().
