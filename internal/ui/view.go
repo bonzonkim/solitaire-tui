@@ -101,12 +101,46 @@ func (m model) footerView() string {
 
 // renderTopRow renders Stock, Waste, and Foundations
 func (m model) renderTopRow() string {
-	// Card width + spacing
-	// We need careful horizontal layout
+	// Helper to render an empty pile with box borders
+	renderEmptyPile := func(centerText string, isActive, isSource bool) string {
+		style := styles.EmptyPile
+
+		// Select border based on state and apply color
+		var borderTop, borderBottom, borderVert string
+		if isSource {
+			borderStyle := lipgloss.NewStyle().Foreground(styles.SourceBorder)
+			borderTop = borderStyle.Render(styles.SourceBorderTop)
+			borderBottom = borderStyle.Render(styles.SourceBorderBottom)
+			borderVert = borderStyle.Render(styles.SourceBorderVert)
+		} else if isActive {
+			borderStyle := lipgloss.NewStyle().Foreground(styles.SelectedBorder)
+			borderTop = borderStyle.Render(styles.SelectedBorderTop)
+			borderBottom = borderStyle.Render(styles.SelectedBorderBottom)
+			borderVert = borderStyle.Render(styles.SelectedBorderVert)
+		} else {
+			borderTop = styles.BorderTop
+			borderBottom = styles.BorderBottom
+			borderVert = styles.BorderVert
+		}
+
+		// Build 7-line empty pile with box borders
+		line2 := borderVert + "         " + borderVert
+		// Center line with text (e.g., "  ○  " or "  ♠  ")
+		line4 := borderVert + "    " + centerText + "    " + borderVert
+		content := borderTop + "\n" +
+			line2 + "\n" +
+			line2 + "\n" +
+			line4 + "\n" +
+			line2 + "\n" +
+			line2 + "\n" +
+			borderBottom
+		return style.Render(content)
+	}
 
 	// Helper to render a specific pile's top card or empty slot
-	renderPile := func(pileIdx int, emptyText string, cards []*game.Card) string {
+	renderPile := func(pileIdx int, emptyCenterText string, cards []*game.Card) string {
 		isActive := m.game.ActivePile == pileIdx
+		isSource := m.sourcePileIndex == pileIdx
 
 		if len(cards) > 0 {
 			topCard := cards[len(cards)-1]
@@ -114,14 +148,8 @@ func (m model) renderTopRow() string {
 			return m.renderCard(topCard, pileIdx, len(cards)-1, false)
 		}
 
-		// Empty pile
-		style := styles.EmptyPile
-		if isActive {
-			style = style.BorderForeground(styles.SelectedBorder).BorderStyle(lipgloss.DoubleBorder())
-		}
-
-		// Adjust empty text vertical alignment manually if needed, or rely on style
-		return style.Render(emptyText)
+		// Empty pile with box borders
+		return renderEmptyPile(emptyCenterText, isActive, isSource)
 	}
 
 	var parts []string
@@ -132,32 +160,51 @@ func (m model) renderTopRow() string {
 	var stockStr string
 	if len(m.game.Stock.Cards) > 0 {
 		style := styles.FaceDownCard
+
+		// Select border based on state and apply color
+		var borderTop, borderBottom, borderVert string
 		if stockSource {
 			style = styles.SourceCard.Background(styles.FaceDownBackground).Foreground(styles.FaceDownForeground)
+			borderStyle := lipgloss.NewStyle().Foreground(styles.SourceBorder)
+			borderTop = borderStyle.Render(styles.SourceBorderTop)
+			borderBottom = borderStyle.Render(styles.SourceBorderBottom)
+			borderVert = borderStyle.Render(styles.SourceBorderVert)
 		} else if stockActive {
 			style = styles.SelectedCard.Background(styles.FaceDownBackground).Foreground(styles.FaceDownForeground)
+			borderStyle := lipgloss.NewStyle().Foreground(styles.SelectedBorder)
+			borderTop = borderStyle.Render(styles.SelectedBorderTop)
+			borderBottom = borderStyle.Render(styles.SelectedBorderBottom)
+			borderVert = borderStyle.Render(styles.SelectedBorderVert)
+		} else {
+			borderTop = styles.BorderTop
+			borderBottom = styles.BorderBottom
+			borderVert = styles.BorderVert
 		}
-		stockStr = style.Render("░░░░░░░░░\n░░░░░░░░░\n░░░░░░░░░\n░░░░░░░░░\n░░░░░░░░░")
+
+		// Stock with box borders and ░ fill
+		content := borderTop + "\n" +
+			borderVert + styles.FaceDownFill + borderVert + "\n" +
+			borderVert + styles.FaceDownFill + borderVert + "\n" +
+			borderVert + styles.FaceDownFill + borderVert + "\n" +
+			borderVert + styles.FaceDownFill + borderVert + "\n" +
+			borderVert + styles.FaceDownFill + borderVert + "\n" +
+			borderBottom
+		stockStr = style.Render(content)
 	} else {
-		style := styles.EmptyPile
-		if stockActive {
-			style = style.BorderForeground(styles.SelectedBorder).BorderStyle(lipgloss.DoubleBorder())
-		}
-		stockStr = style.Render("\n\n    ○    \n\n")
+		stockStr = renderEmptyPile("○", stockActive, stockSource)
 	}
 	parts = append(parts, stockStr)
 	parts = append(parts, "  ") // Space
 
 	// Waste
-	parts = append(parts, renderPile(game.WastePile, "\n\n         \n\n", m.game.Waste.Cards))
+	parts = append(parts, renderPile(game.WastePile, " ", m.game.Waste.Cards))
 	parts = append(parts, "    ") // Gap
 
 	// Foundations
 	foundations := []string{"♠", "♥", "♦", "♣"}
 	for i := 0; i < 4; i++ {
 		pileIdx := game.FoundationPile1 + i
-		emptyTxt := fmt.Sprintf("\n\n    %s    \n\n", foundations[i])
-		parts = append(parts, renderPile(pileIdx, emptyTxt, m.game.Foundations[i].Cards))
+		parts = append(parts, renderPile(pileIdx, foundations[i], m.game.Foundations[i].Cards))
 		if i < 3 {
 			parts = append(parts, " ")
 		}
@@ -177,12 +224,39 @@ func (m model) renderTableaus() string {
 		var colBuilder strings.Builder
 
 		if len(pile.Cards) == 0 {
-			// Empty pile
+			// Empty pile with box borders
 			style := styles.EmptyPile
-			if m.game.ActivePile == pileIdx {
-				style = style.BorderForeground(styles.SelectedBorder).BorderStyle(lipgloss.DoubleBorder())
+			isActive := m.game.ActivePile == pileIdx
+			isSource := m.sourcePileIndex == pileIdx
+
+			// Select border based on state and apply color
+			var borderTop, borderBottom, borderVert string
+			if isSource {
+				borderStyle := lipgloss.NewStyle().Foreground(styles.SourceBorder)
+				borderTop = borderStyle.Render(styles.SourceBorderTop)
+				borderBottom = borderStyle.Render(styles.SourceBorderBottom)
+				borderVert = borderStyle.Render(styles.SourceBorderVert)
+			} else if isActive {
+				borderStyle := lipgloss.NewStyle().Foreground(styles.SelectedBorder)
+				borderTop = borderStyle.Render(styles.SelectedBorderTop)
+				borderBottom = borderStyle.Render(styles.SelectedBorderBottom)
+				borderVert = borderStyle.Render(styles.SelectedBorderVert)
+			} else {
+				borderTop = styles.BorderTop
+				borderBottom = styles.BorderBottom
+				borderVert = styles.BorderVert
 			}
-			colBuilder.WriteString(style.Render("\n\n    K    \n\n"))
+
+			line2 := borderVert + "         " + borderVert
+			line4 := borderVert + "    K    " + borderVert // K centered for King placement
+			content := borderTop + "\n" +
+				line2 + "\n" +
+				line2 + "\n" +
+				line4 + "\n" +
+				line2 + "\n" +
+				line2 + "\n" +
+				borderBottom
+			colBuilder.WriteString(style.Render(content))
 		} else {
 			// Stack of cards
 			for i, card := range pile.Cards {
@@ -219,157 +293,104 @@ func (m model) renderTableaus() string {
 	return lipgloss.JoinHorizontal(lipgloss.Top, finalTableau...)
 }
 
-// renderCard creates the string for a single card
+// renderCard creates the string for a single card using Unicode Box Drawing characters
+// Dimensions: 11 chars wide × 7 lines high
 func (m model) renderCard(c *game.Card, pileIdx, cardIdx int, isOverlap bool) string {
 	isActive := m.game.ActivePile == pileIdx && m.game.ActiveCard == cardIdx
 	isSource := m.sourcePileIndex == pileIdx && m.sourceCardIndex == cardIdx
 
-	// Determine base style
-	var style lipgloss.Style
-
-	if !c.FaceUp {
-		style = styles.FaceDownCard
-		if isSource {
-			style = styles.SourceCard.Background(styles.FaceDownBackground).Foreground(styles.FaceDownForeground)
-		} else if isActive {
-			style = styles.SelectedCard.Background(styles.FaceDownBackground).Foreground(styles.FaceDownForeground)
-		}
-
-		if isOverlap {
-			return style.Height(styles.OverlapHeight).Render("░░░░░░░░░")
-		}
-		return style.Render("░░░░░░░░░\n░░░░░░░░░\n░░░░░░░░░\n░░░░░░░░░\n░░░░░░░░░")
-	}
-
-	// Face Up
-	// Face Up
-	isRed := c.Suit.Color() == "Red"
+	// Create border style based on state
+	var borderStyle lipgloss.Style
+	var borderTopStr, borderBottomStr, borderVertStr string
 
 	if isSource {
-		if isRed {
-			style = styles.SourceRedCard
-		} else {
-			style = styles.SourceBlackCard
-		}
+		// SOURCE card: thick borders with YELLOW color
+		borderStyle = lipgloss.NewStyle().Foreground(styles.SourceBorder)
+		borderTopStr = styles.SourceBorderTop
+		borderBottomStr = styles.SourceBorderBottom
+		borderVertStr = styles.SourceBorderVert
 	} else if isActive {
-		if isRed {
-			style = styles.SelectedRedCard
-		} else {
-			style = styles.SelectedBlackCard
-		}
-	} else if isRed {
-		style = styles.RedSuit
+		// ACTIVE card: double-line borders with CYAN color
+		borderStyle = lipgloss.NewStyle().Foreground(styles.SelectedBorder)
+		borderTopStr = styles.SelectedBorderTop
+		borderBottomStr = styles.SelectedBorderBottom
+		borderVertStr = styles.SelectedBorderVert
 	} else {
-		style = styles.BlackSuit
+		// NORMAL card: single-line borders (no extra color)
+		borderStyle = lipgloss.NewStyle()
+		borderTopStr = styles.BorderTop
+		borderBottomStr = styles.BorderBottom
+		borderVertStr = styles.BorderVert
+	}
+
+	// Pre-render colored borders
+	borderTop := borderStyle.Render(borderTopStr)
+	borderBottom := borderStyle.Render(borderBottomStr)
+	borderL := borderStyle.Render(borderVertStr)
+	borderR := borderStyle.Render(borderVertStr)
+
+	if !c.FaceUp {
+		// Face-down card - use face-down colors for fill
+		fillStyle := styles.FaceDownCard
+		fill := fillStyle.Render(styles.FaceDownFill)
+
+		if isOverlap {
+			// Overlap mode: show only top 2 lines
+			return borderTop + "\n" + borderL + fill + borderR
+		}
+
+		// Full 7-line card
+		return borderTop + "\n" +
+			borderL + fill + borderR + "\n" +
+			borderL + fill + borderR + "\n" +
+			borderL + fill + borderR + "\n" +
+			borderL + fill + borderR + "\n" +
+			borderL + fill + borderR + "\n" +
+			borderBottom
+	}
+
+	// Face Up card - determine content style
+	isRed := c.Suit.Color() == "Red"
+	var contentStyle lipgloss.Style
+	if isRed {
+		contentStyle = styles.RedSuit
+	} else {
+		contentStyle = styles.BlackSuit
 	}
 
 	rank := c.Rank.String()
-	// Adjust 10 to standard spacing
-	rankStr := rank
+	suitSym := c.Suit.String()
 
-	suitSym := styles.ArtRegistry[c.Suit.String()]
-
-	var content string
-
-	if isOverlap {
-		// Overlap view: just top corners
-		// Width 9 (inside 11 width border)
-		// "K ♠      "
-		content = fmt.Sprintf("%-2s%-1s      ", rankStr, suitSym)
-		style = style.Height(styles.OverlapHeight) // Force height
+	// Build face-up card with colored content
+	var rankL, rankR string
+	if len(rank) == 2 {
+		rankL = rank
+		rankR = rank
 	} else {
-		// Full Card View (9x5 content area inside 11x7 border)
-		// Top Line: "K ♠      " (Width 9)
-		topLine := fmt.Sprintf("%-2s%-1s      ", rankStr, suitSym)
-
-		// Bottom Line: "      ♠ K" (Width 9)
-		botLine := fmt.Sprintf("      %-1s%2s", suitSym, rankStr)
-
-		// Center Art (3 lines)
-		var centerLines []string
-
-		// Check for Art Registry (K, Q, J, A)
-		if art, ok := styles.ArtRegistry[rank]; ok {
-			// Split art into lines
-			lines := strings.Split(strings.Trim(art, "\n"), "\n")
-			// Pad to center
-			for _, l := range lines {
-				centerLines = append(centerLines, fmt.Sprintf("   %s   ", l)) // 3 padding + 3 art + 3 padding = 9
-			}
-			// Fill if missing lines
-			for len(centerLines) < 3 {
-				centerLines = append(centerLines, "         ")
-			}
-		} else {
-			// Number cards - Draw Pips
-			val := int(c.Rank)
-
-			// Simple heuristics for pip placement (3 lines in center of 9 width)
-			top := "         "
-			mid := "         "
-			bot := "         "
-
-			switch val {
-			case 10:
-				top = " ♣  ♣  ♣ "
-				mid = "  ♣   ♣  "
-				bot = " ♣  ♣  ♣ "
-			case 9:
-				top = " ♣  ♣  ♣ "
-				mid = "    ♣    "
-				bot = " ♣  ♣  ♣ "
-			case 8:
-				top = " ♣  ♣  ♣ "
-				mid = "   ♣ ♣   "
-				bot = " ♣  ♣  ♣ "
-			case 7:
-				top = " ♣     ♣ "
-				mid = " ♣  ♣  ♣ "
-				bot = " ♣     ♣ "
-			case 6:
-				top = " ♣     ♣ "
-				mid = " ♣     ♣ "
-				bot = " ♣     ♣ "
-			case 5:
-				top = " ♣     ♣ "
-				mid = "    ♣    "
-				bot = " ♣     ♣ "
-			case 4:
-				top = " ♣     ♣ "
-				mid = "         "
-				bot = " ♣     ♣ "
-			case 3:
-				top = "    ♣    "
-				mid = "    ♣    "
-				bot = "    ♣    "
-			case 2:
-				top = "    ♣    "
-				mid = "         "
-				bot = "    ♣    "
-			}
-
-			replaceSuit := func(s string) string {
-				return strings.ReplaceAll(s, "♣", suitSym)
-			}
-
-			if val >= 2 && val <= 10 {
-				centerLines = []string{replaceSuit(top), replaceSuit(mid), replaceSuit(bot)}
-			} else {
-				// Fallback
-				centerLines = []string{"         ", fmt.Sprintf("    %s    ", suitSym), "         "}
-			}
-		}
-
-		content = fmt.Sprintf("%s\n%s\n%s\n%s\n%s",
-			topLine,
-			centerLines[0],
-			centerLines[1],
-			centerLines[2],
-			botLine,
-		)
+		rankL = rank + " "
+		rankR = " " + rank
 	}
 
-	return style.Render(content)
+	// Style the inner content (rank, suit, spaces) with card colors
+	inner2 := contentStyle.Render(" " + rankL + "      ")
+	inner3 := contentStyle.Render("         ")
+	inner4 := contentStyle.Render("    " + suitSym + "    ")
+	inner5 := contentStyle.Render("         ")
+	inner6 := contentStyle.Render("      " + rankR + " ")
+
+	if isOverlap {
+		// Overlap mode: show only top 2 lines
+		return borderTop + "\n" + borderL + inner2 + borderR
+	}
+
+	// Full 7-line card
+	return borderTop + "\n" +
+		borderL + inner2 + borderR + "\n" +
+		borderL + inner3 + borderR + "\n" +
+		borderL + inner4 + borderR + "\n" +
+		borderL + inner5 + borderR + "\n" +
+		borderL + inner6 + borderR + "\n" +
+		borderBottom
 }
 
 // renderHelpOverlay renders the help popup
